@@ -1,0 +1,31 @@
+#!/bin/bash
+
+FILE1=$1
+FILE2=$2
+
+suffix=`date "+%Y-%m-%d_%H_%M.%S.%s"`
+
+ORIG=${suffix}_$(basename $FILE1).dodiff
+NEW=${suffix}_$(basename $FILE2)
+
+usage () {
+    echo "Comparing 2 files and making patch:"
+    echo "Usage $0 <file_old> <file_new>"
+}
+
+
+if [ $# -ne 2 ]; then
+    usage
+    exit 1
+fi
+
+mkdir -p /tmp/dodiff
+echo "$FILE1 => /tmp/dodiff/$ORIG"
+cp $FILE1 /tmp/dodiff/$ORIG
+echo "$FILE2 => /tmp/dodiff/$NEW"
+cp $FILE2 /tmp/dodiff/$NEW
+echo "Comparing"
+gendiff /tmp/dodiff/ .dodiff
+rm -f /tmp/dodiff/$ORIG /tmp/dodiff/$NEW
+
+[ "$(ls -A /tmp/dodiff)" ] || rm -rf /tmp/dodiff

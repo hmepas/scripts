@@ -1,0 +1,32 @@
+#!/bin/bash
+
+FROM="$1"
+TO="$2"
+WHERE="$3"
+
+suffix=`date "+%H%M.%s"`
+
+usage () {
+    echo "$0 <pattern> <replace> <files>"
+    exit 1
+}
+
+if [ $# -ne 3 ]; then
+    usage
+    exit 1
+fi
+
+echo "Greping files"
+for f in `grep -lR $FROM $WHERE`; do
+    echo "g>    $f"
+    cat $f | sed -e"s/$FROM/$TO/g" > /tmp/renamer_$suffix
+    cat /tmp/renamer_$suffix > $f
+done
+
+echo "Renaming files"
+for f in `find $WHERE -name $FROM*`; do
+    nf=`echo $f | sed -e "s/$FROM/$TO/"`
+    echo "r>    $f => $nf"
+    mv $f $nf
+done
+

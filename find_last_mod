@@ -1,0 +1,4 @@
+#!/bin/bash
+# libs modules muzkult.ru.conf muzkult.sql skins templates
+find $@ -type f -printf "%TY-%Tm-%Td %TH:%TM %p\n" | sort -rn
+

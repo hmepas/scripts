@@ -1,0 +1,94 @@
+#!/usr/bin/perl -w
+use strict;
+
+# i once lived for the long time with broken utf8 in mysql tables
+# it's worked because i used it with perl CGI which used to have
+# broken UTF8 settings also, so having wrong setuped code page in mysql
+# misconfigured DBI I managed to have perfectly good cyrillic 
+# on my web bases; 
+# Problems started when I tried to move this rubish to a different server
+# this srcipt i wrote is to heal those pages;
+
+use Data::Dumper;
+use DBI;
+
+if($#ARGV < 2) {
+    print "Usage: $0 <db_username> <db_password> <db_name> [<host>] [<port>]";
+    exit(1);
+}
+
+my $db_user = $ARGV[0];
+my $db_pass = $ARGV[1];
+my $db_name = $ARGV[2];
+
+my $db_host = $ARGV[3] || "localhost";
+my $db_port = $ARGV[4] || "";
+
+my $db1 = db_connect();
+my $db2 = db_connect();
+$db2->do('SET NAMES "utf8"');
+
+
+foreach my $table ( tables() ) {
+        print "TABLE : $table \n";
+        heal_table($db1, $db2, $table);
+}
+
+
+sub tables {
+        my $db = shift;
+
+        my $sel_tables = $db1->prepare("show tables");
+
+        $sel_tables->execute;
+
+        return  map { $_->[0] }@{$sel_tables->fetchall_arrayref};
+}
+
+sub db_connect {
+        return DBI->connect(  "dbi:mysql:database=" . $db_name .
+                                ($db_host?":hostname=" . $db_host:'') .
+                                ($db_port?";port=" . $db_port:''),
+                        $db_user, $db_pass,
+                        { RaiseError => 1, AutoCommit => 1 }) or
+                die "cleshe:db->new() can't connecto to the database";
+
+}
+
+sub heal_table {
+        my $db1 = shift;
+        my $db2 = shift;
+
+        my $table = shift;
+
+        my $select = $db1->prepare("select * from $table");
+        $select->execute();
+
+        my $values_placement = '';
+        my @keys = ();
+
+        while(my $r = $select->fetchrow_hashref) {
+                print Dumper($r);
+
+                @keys = keys %$r unless $#keys>=0;
+
+                unless($values_placement) {
+                        my @v = ();
+                        push @v, "$_=?"
+                                foreach (@keys);
+                        $values_placement = join(', ', @v);
+                }
+                my @values = ();
+                push @values, $r->{$_}  foreach (@keys);
+                $db2->do("INSERT INTO $table SET $values_placement
+        ON DUPLICATE KEY UPDATE $values_placement", {}, @values, @values);
+        }
+}
+
+sub fetch_table {
+        my $table = shift;
+        my $db = shift;
+        my $s = $db->prepare("select * from $table");
+        $s->execute();
+        return $s->fetchall_arrayref;
+}

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+FILE=$1
+DB=$2
+
+if [ -z $DB ]; then
+    echo "Usage:"
+    echo "$0 <sql_dump_file> <database_name>"
+    exit
+fi
+
+awk  'BEGIN{ go=0 }; /-- Current Database:/ { if (go == 1) exit } ; { if (go == 1)  print } ; /-- Current Database: `'$DB'`/ { go=1 } ;      ' $FILE 
+

@@ -1,0 +1,23 @@
+#!/usr/bin/perl -w
+use strict;
+
+my $out = '';
+while(<>) {
+	$_ = value_quoted($_);
+	$out .= $_;
+}
+print $out;
+
+sub value_quoted {
+    my $s = shift;
+
+#    $s =~ s/;/&#59;/g;
+    $s =~ s/&/&amp;/g;
+    $s =~ s/</&lt;/g;
+    $s =~ s/>/&gt;/g;
+    $s =~ s/\|/\&#124;/g;
+    $s =~ s/"/&quot;/g;
+    $s =~ s|\'|&#39;|sg;
+    return $s;
+}
+
