@@ -1,0 +1,9 @@
+#!/usr/bin/perl 
+use strict;
+
+my $buff = '';
+$buff .= $_
+	while(<>); 
+
+close(STDIN);
+print $buff;
