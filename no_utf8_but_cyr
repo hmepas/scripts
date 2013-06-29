@@ -4,6 +4,6 @@
 # but lack of use utf8 pragma
 # usefull for perl projects
 
-for i in `grep -lP "[\x80-\xFF]" $@`; do
+for i in `grep -RlP "[\x80-\xFF]" $@`; do
     grep -L 'utf8' $i;
 done
