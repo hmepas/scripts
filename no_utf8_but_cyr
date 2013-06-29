@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# searches for files which has cyrillic symbols in them
+# but lack of use utf8 pragma
+# usefull for perl projects
+
+for i in `grep -lP "[\x80-\xFF]" $@`; do
+    grep -L 'utf8' $i;
+done
