@@ -1,0 +1,10 @@
+#!/bin/sh
+
+if [ -z $1 ]; then
+    echo "Usage: $0 <perl_module_name>"
+    echo "Example: $0 Data::Dumper"
+    exit 1;
+fi
+
+MOD_PATH=$(echo $1 | sed 's/::/\//gi')
+perl -M$1 -MDDP -e'p %INC' 2>&1 | grep "$MOD_PATH"
