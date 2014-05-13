@@ -1,0 +1,16 @@
+#!/bin/bash
+
+find "$@" -name '*.pm' \
+    | xargs ack '^use [\w:]+;' \
+    | awk '{print $2}' \
+    | perl -pe 's/;//' \
+    | sort | uniq -c  \
+    | perl -I "$@" -lane '
+        eval {
+            eval "
+                require $F[1];
+                \$r = scalar(\@$F[1]::EXPORT);
+                print qq~$F[1] \$F[0] x \$r -> ~ . (\$r*$F[0])
+            ";
+        };
+    ' | sort -nk 6
