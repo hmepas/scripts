@@ -1,0 +1,14 @@
+#!/bin/bash
+# fixing find on Mac OS X which doesn't work properly without arguments like on linux
+
+FIND_EXEC=/usr/bin/find
+if [[ $@ ]]; then
+    $FIND_EXEC $@
+else
+    unamestr=`uname`
+    if [[ "$unamestr" == 'Darwin' ]]; then
+        $FIND_EXEC *
+    else
+        $FIND_EXEC
+    fi
+fi
